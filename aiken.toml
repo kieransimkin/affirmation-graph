@@ -1,7 +1,7 @@
 name = "kieransimkin/affirmation-graph"
 version = "1.0.0"
 compiler = "v1.1.4"
-plutus = "v2"
+plutus = "v3"
 license = "Apache-2.0"
 description = "Aiken contracts for project 'affirmation-graph'"
 

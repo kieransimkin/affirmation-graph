@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "generateCredentials": "node examples/generateCredentials.js",
-    "affirm": "node --trace-uncaught examples/affirm.js"
+    "affirm": "node --trace-uncaught examples/affirm.js",
+    "build": "aiken build",
+    "dev": "aiken build --trace-level verbose",
+    "install": "npm run build"
   },
   "repository": {
     "type": "git",
