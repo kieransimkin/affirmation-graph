@@ -62,7 +62,7 @@ with open("../plutus.json", "r") as f:
         builder = TransactionBuilder(context)
         builder.add_input_address(owner_address)
         datum = MyDatum(owner=owner_public_key.hash().to_primitive())
-        print(key_to_hash_str(owner_public_key))
+        
         datum_hash = datum.hash()
     
         manifest = json.load(f)
@@ -74,16 +74,10 @@ with open("../plutus.json", "r") as f:
         
         script_address = Address(mint_script_hash, beneficiary_stake_key, network=network)
         
-        
-        
-        unit_value = "%s%s" % (mint_script_hash, owner_public_key.hash().to_primitive())
-
 
         my_asset = Asset()
         nft1 = AssetName(owner_public_key.hash().to_primitive())
         my_asset[nft1] = 1
-
-
         
         my_nft = MultiAsset()
         my_nft[mint_script_hash] = my_asset
@@ -91,15 +85,11 @@ with open("../plutus.json", "r") as f:
         
 
         builder.add_output(new_output)
-
         builder.mint = my_nft
         builder.use_redeemer_map=True
-        
         builder.add_minting_script(mint_script, Redeemer(data=MyRedeemer()))
-        
-        
         signed_tx = builder.build_and_sign([owner_private_key], change_address=owner_address)
 
         # Submit signed transaction to the network
         context.submit_tx(signed_tx)
-        print (script_address.encode())
+        print ("Tx Hash: " + str(signed_tx.id))

@@ -83,7 +83,7 @@ with open("../plutus.json", "r") as f:
         with open("../referenceScriptUTXO", "w") as text_file:
             text_file.write("%s" % signed_tx.id)
 
-        print (signed_tx.id)
+        print ("Tx Hash: " + str(signed_tx.id))
         # Submit signed transaction to the network
         
         

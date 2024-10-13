@@ -62,7 +62,7 @@ with open("../plutus.json", "r") as f:
         builder = TransactionBuilder(context)
         builder.add_input_address(owner_address)
         datum = MyDatum(owner=owner_public_key.hash().to_primitive())
-        print(key_to_hash_str(owner_public_key))
+        
         datum_hash = datum.hash()
     
         manifest = json.load(f)
@@ -76,7 +76,10 @@ with open("../plutus.json", "r") as f:
         script_address = Address(mint_script_hash, beneficiary_stake_key, network=network)
         
         address_utxos = context.utxos(script_address)
-        print (address_utxos)
+        if (len(address_utxos)<1):
+            print ("No affirmation found, try creating one first, or give it a minute to hit the blockchain")
+            exit()
+        
         unit_value = "%s%s" % (mint_script_hash, owner_public_key.hash().to_primitive())
 
         my_asset = Asset()
@@ -99,5 +102,5 @@ with open("../plutus.json", "r") as f:
         signed_tx = builder.build_and_sign([owner_private_key], change_address=owner_address)
 
         # Submit signed transaction to the network
-        print(context.submit_tx(signed_tx))
-        print (script_address.encode())
+        context.submit_tx(signed_tx)
+        print ("Tx Hash: " + str(signed_tx.id))
