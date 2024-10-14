@@ -7,9 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "generateCredentials": "node examples/generateCredentials.js",
     "affirm": "node --trace-uncaught examples/affirm.js",
-    "build": "aiken build",
+    "build": "aiken build && cp plutus.json submodules/mesh/packages/mesh-contract/src/affirmation/",
     "dev": "aiken build --trace-level verbose",
-    "install": "npm run build"
+    "install": "npm run build "
   },
   "repository": {
     "type": "git",

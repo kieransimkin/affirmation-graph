@@ -49,8 +49,7 @@
     }
   ],
   "definitions": {
-    "VerificationKeyHash": {
-      "title": "VerificationKeyHash",
+    "ByteArray": {
       "dataType": "bytes"
     },
     "Void": {
@@ -73,7 +72,7 @@
           "fields": [
             {
               "title": "owner",
-              "$ref": "#/definitions/VerificationKeyHash"
+              "$ref": "#/definitions/ByteArray"
             }
           ]
         }

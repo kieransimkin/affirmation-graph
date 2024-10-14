@@ -1,5 +1,4 @@
 use aiken/collection/list.{filter, find, has}
-use aiken/crypto.{VerificationKeyHash}
 use cardano/address.{Address, Script}
 use cardano/assets.{PolicyId, quantity_of}
 use cardano/transaction.{
@@ -7,7 +6,7 @@ use cardano/transaction.{
 }
 
 pub type AffirmationDatum {
-  owner: VerificationKeyHash,
+  owner: ByteArray,
 }
 
 validator v1 {
@@ -26,8 +25,7 @@ validator v1 {
       expect has(extra_signatories, check_datum.owner) == True
       expect mint_name == check_datum.owner
     } else {
-      let affirmer: VerificationKeyHash = mint_name
-      expect has(extra_signatories, affirmer) == True
+      expect has(extra_signatories, mint_name) == True
     }
 
     when mint_quantity is {
