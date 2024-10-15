@@ -60,32 +60,33 @@ const affirm = async (beneficiary, wallet) => {
     
     const stakeAddrProps = stakeAddr.getProps();
     const stakeHash = stakeAddrProps.delegationPart?.hash || "";
+    const stakeHashBin = Buffer.from(stakeHash,'hex');
     const rewardAddrBase = serializeAddressObj(pubKeyAddress(stakeHash, null, false))
     
-    const mintingScript = getScript("Mint", beneficiary.hash,wallet.getNetworkId());
+    const mintingScript = getScript("Mint", beneficiary.hash, wallet.getNetworkId());
     if (!mintingScript.code) return '';
     const targetAddress = mintingScript.address;
+    
+    
     
 
     const redeemer = {data: { alternative: 0, fields: [] }};
     const myDatum= { alternative: 0, fields: [stakeHash] };
     
     const asset = {
-      assetName: stakeHash,
+      assetName: stakeHashBin,
       assetQuantity: '1',
       recipient: {address: targetAddress, datum:{inline: true, value: myDatum}}
     };
       
-    const assets = [];
-    assets.push({unit: mintingScript.policyId+hexToString(stakeHash), quantity:'1'})
     
-    const tx = new Transaction({ initiator: wallet, verbose: true })
+    const tx = new Transaction({ initiator: wallet, verbose: false })
       .mintAsset(mintingScript, asset, redeemer)
       .setNetwork("preprod")
       .setRequiredSigners([stakeAddrBech,rewardAddrBase])
       .setCollateral(collateral)
-      .setTimeToStart(resolveSlotNo('preprod',Date.now()))
-      .setTimeToExpire(resolveSlotNo('preprod',Date.now()))
+//      .setTimeToStart(resolveSlotNo('preprod',Date.now()))
+//      .setTimeToExpire(resolveSlotNo('preprod',Date.now()))
       .setChangeAddress(stakeAddrBech)
 
     const result = await tx.build();
@@ -93,6 +94,8 @@ const affirm = async (beneficiary, wallet) => {
     return tx.txBuilder.txHex;
 }
 
+
+// This just handles set up and submission of the transaction once it's been generated
 
 const prov = new BlockfrostProvider('preprod2g0G79mo7zZP2u41GlIVX6e2L19FLcAs');
 
@@ -106,7 +109,7 @@ const wallet = new MeshWallet({
   },
 });
 wallet.getNetworkId()
-const txBuilder = new MeshTxBuilder({fetcher: prov, submitter: prov})
+
 
 const beneficiaryAddr = Address.fromBech32("addr_test1qz0hzxlrw5lwspvc9gpqll3ujpxyjmd5uylwqe8xdlt5d82ktxgu9qsyjahc67r53404t42p44vxv8hwhpdscw9l58jqktkm74");
 const beneficiaryAddrProps = beneficiaryAddr.getProps()
@@ -114,14 +117,21 @@ const beneficiaryKey = beneficiaryAddrProps.delegationPart
 
 const result = await affirm(beneficiaryKey,wallet);
 
-const cardanoTx = wallet.signTx(result,true,true);
-const submitResult = await txBuilder.submitTx(cardanoTx)
+const cardanoTx = await wallet.signTx(result,false,true);
+
+
+//await txBuilder.submitTx(cardanoTx)
+const submitResult = await wallet.submitTx(cardanoTx)
+console.log(submitResult);
+
 
 
 
 
 
 // You can tell this has taken a lot of debugging:
+
+
 /*
 const blueprint = JSON.parse(fs.readFileSync('./plutus.json'));
 
