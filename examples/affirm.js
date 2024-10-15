@@ -8,8 +8,8 @@ async function readValidator() {
     const validator = JSON.parse(fs.readFileSync("plutus.json")).validators[0];
     
     let ret = {
-      type: "PlutusV2",
-      script:  applyDoubleCborEncoding(validator.compiledCode),
+      type: "PlutusV3",
+      script:  validator.compiledCode
       
     };
     ret.policyID = lucid.utils.validatorToScriptHash(ret);
@@ -42,22 +42,23 @@ const beneficiaryStakeKey = lucid.utils.getAddressDetails(
   });
   const tempData = BigInt(1);
   console.log(tempData)
-  const redeemer = Redeemer.new(RedeemerTag.new_mint(),BigNum.from_str("0"),PlutusData.from_bytes(datum2), ExUnits.new(BigNum.from_str("1000"), BigNum.from_str("100000000")))
-  
-  console.log(redeemer)
+  //const redeemer = Redeemer.new(RedeemerTag.new_mint(),BigNum.from_str("0"),PlutusData., ExUnits.new(BigNum.from_str("1000"), BigNum.from_str("100000000")))
+  const redeemer = () => Data.void();
+  //console.log(redeemer)
   console.log('Validator address:')
   console.log(validatorAddress)
   console.log(policyID)
   let tx = await lucid
   .newTx()
   .attachMintingPolicy(validator)
-  .attachSpendingValidator(validator)
   .addSignerKey(ownerStakeKeyHash)
   .addSigner(await ownerWallet.address())
-  .collectFrom(utxos, Data.void())
+  .collectFrom(utxos)
   // use the gift_card validator
   
-.mintAssets({[policyID+ownerStakeKeyHash]: BigInt(1)}, Buffer.from(redeemer.to_bytes()).toString('hex'))
+.mintAssets({[policyID+ownerStakeKeyHash]: BigInt(1)}, Data.to(new Constr(0, []))).complete;
+//.complete()
+console.log(tx.txBuilder.outputs);
   // mint 1 of the asset
   
   /*
@@ -72,7 +73,7 @@ const beneficiaryStakeKey = lucid.utils.getAddressDetails(
     { lovelace: BigInt(1000000), [policyID+ownerStakeKeyHash]:BigInt(1) }
   )
     //*/
-  .complete();
+  //.complete();
   
   
   console.log('Built transation');

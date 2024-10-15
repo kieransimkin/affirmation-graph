@@ -88,6 +88,9 @@ with open("../plutus.json", "r") as f:
         builder.mint = my_nft
         builder.use_redeemer_map=True
         builder.add_minting_script(mint_script, Redeemer(data=MyRedeemer()))
+        #tx_body = builder.build(owner_address);
+        #with open("affirm.txBody", "w") as text_file:
+        #    text_file.write("%s" % tx_body.to_primitive())
         signed_tx = builder.build_and_sign([owner_private_key], change_address=owner_address)
 
         # Submit signed transaction to the network

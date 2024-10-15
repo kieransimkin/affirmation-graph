@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "generateCredentials": "node examples/generateCredentials.js",
     "affirm": "node --trace-uncaught examples/affirm.js",
+    "affirmMesh": "node --trace-uncaught examples/affirm.mesh.mjs",
     "build": "aiken build && cp plutus.json submodules/mesh/packages/mesh-contract/src/affirmation/",
     "dev": "aiken build --trace-level verbose",
     "install": "npm run build "
@@ -21,7 +22,8 @@
   },
   "homepage": "https://github.com/kieransimkin/affirmation-graph#readme",
   "dependencies": {
-    "@meshsdk/core": "^1.7.8",
+    "@meshsdk/contract": "file:submodules/mesh/packages/mesh-contract",
+    "@meshsdk/core": "file:submodules/mesh/packages/mesh-core",
     "@stricahq/typhonjs": "^2.0.0",
     "cbor": "^9.0.2",
     "lucid-cardano": "^0.10.10"
