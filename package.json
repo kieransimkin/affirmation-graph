@@ -22,8 +22,7 @@
   },
   "homepage": "https://github.com/kieransimkin/affirmation-graph#readme",
   "dependencies": {
-    "@meshsdk/contract": "file:submodules/mesh/packages/mesh-contract",
-    "@meshsdk/core": "file:submodules/mesh/packages/mesh-core",
+    "@meshsdk/core": "^1.7.9",
     "@stricahq/typhonjs": "^2.0.0",
     "cbor": "^9.0.2",
     "lucid-cardano": "^0.10.10"

@@ -1,9 +1,7 @@
 import fs from 'fs'
-
 import {
-  
   BlockfrostProvider,
-hexToString,
+  hexToString,
   MeshWallet,
   MeshTxBuilder ,
   LANGUAGE_VERSIONS,
@@ -13,12 +11,9 @@ hexToString,
   serializePlutusScript,
   serializeAddressObj,pubKeyAddress
 } from '@meshsdk/core';
-//import {MeshAffirmationContract} from '@meshsdk/contract'
 import {Address} from '@meshsdk/core-cst'
-
-
-import cbor from 'cbor'
-import {lucid, ownerWallet, skContent} from './common.js'
+import {resolveSlotNo } from '@meshsdk/common'
+import {skContent} from './common.js'
 const blueprint = JSON.parse(fs.readFileSync('./plutus.json'));
 
 // This just grabs the validator cbor and 
@@ -53,55 +48,54 @@ const getWalletDappAddress = async (wallet) => {
 
 // This function generates the actual transaction - "beneficiary" is the person we are either affirming or revoking, 
 const affirm = async (beneficiary, wallet) => {
-  if (!wallet) throw new Error('Wallet is needed');
-  const walletAddress = await getWalletDappAddress(wallet);
-  const rewardAddress = (await wallet.getRewardAddresses())[0];
-  const collateral = await wallet.getCollateral();
-  
-  if (!rewardAddress) throw new Error('Reward address is needed');;
-  const stakeAddrBech = walletAddress || "";
-  const stakeAddr = Address.fromBech32(stakeAddrBech);
-  const rewardAddr = Address.fromBech32(rewardAddress);
-  
-  const stakeAddrProps = stakeAddr.getProps();
-  const stakeHash = stakeAddrProps.delegationPart?.hash || "";
-  const rewardAddrBase = serializeAddressObj(pubKeyAddress(stakeHash, null, false))
-  
-  const mintingScript = getScript("Mint", beneficiary.hash,wallet.getNetworkId());
-  if (!mintingScript.code) return '';
-  const targetAddress = mintingScript.address;
-  
-
-  const redeemer = {
-    data: { alternative: 0, fields: [] },
-  };
-  const myDatum= { alternative: 0, fields: [stakeHash] };
-  
-  const asset = {
-    assetName: stakeHash,
-    assetQuantity: '1',
-    recipient: {address: targetAddress, datum:{inline: true, value: myDatum}}
-  };
+    if (!wallet) throw new Error('Wallet is needed');
+    const walletAddress = await getWalletDappAddress(wallet);
+    const rewardAddress = (await wallet.getRewardAddresses())[0];
+    const collateral = await wallet.getCollateral();
     
-  const assets = [];
-  assets.push({unit: mintingScript.policyId+hexToString(stakeHash), quantity:'1'})
+    if (!rewardAddress) throw new Error('Reward address is needed');;
+    const stakeAddrBech = walletAddress || "";
+    const stakeAddr = Address.fromBech32(stakeAddrBech);
+    const rewardAddr = Address.fromBech32(rewardAddress);
+    
+    const stakeAddrProps = stakeAddr.getProps();
+    const stakeHash = stakeAddrProps.delegationPart?.hash || "";
+    const rewardAddrBase = serializeAddressObj(pubKeyAddress(stakeHash, null, false))
+    
+    const mintingScript = getScript("Mint", beneficiary.hash,wallet.getNetworkId());
+    if (!mintingScript.code) return '';
+    const targetAddress = mintingScript.address;
+    
 
-  const tx = new Transaction({ initiator: wallet, verbose: true })
-    .mintAsset(mintingScript, asset, redeemer)
-    .setNetwork("preprod")
-    .setRequiredSigners([stakeAddrBech,rewardAddrBase])
-    .setCollateral(collateral)
-    .setChangeAddress(stakeAddrBech)
+    const redeemer = {data: { alternative: 0, fields: [] }};
+    const myDatum= { alternative: 0, fields: [stakeHash] };
+    
+    const asset = {
+      assetName: stakeHash,
+      assetQuantity: '1',
+      recipient: {address: targetAddress, datum:{inline: true, value: myDatum}}
+    };
+      
+    const assets = [];
+    assets.push({unit: mintingScript.policyId+hexToString(stakeHash), quantity:'1'})
+    const validFromTime = resolveSlotNo('preprod');
+    const tx = new Transaction({ initiator: wallet, verbose: true })
+      .mintAsset(mintingScript, asset, redeemer)
+      .setNetwork("preprod")
+      .setRequiredSigners([stakeAddrBech,rewardAddrBase])
+      .setCollateral(collateral)
+      .setTimeToStart(validFromTime)
+      .setTimeToExpire(validFromTime+100)
+      .setChangeAddress(stakeAddrBech)
 
-  const result = await tx.build();
+    const result = await tx.build();
 
-  return tx.txBuilder.txHex;
+    return tx.txBuilder.txHex;
 }
 
 
-
 const prov = new BlockfrostProvider('preprod2g0G79mo7zZP2u41GlIVX6e2L19FLcAs');
-console.log(skContent.split(' '))
+
 const wallet = new MeshWallet({
   networkId: 0,
   fetcher: prov,
@@ -117,9 +111,15 @@ const txBuilder = new MeshTxBuilder({fetcher: prov, submitter: prov})
 const beneficiaryAddr = Address.fromBech32("addr_test1qz0hzxlrw5lwspvc9gpqll3ujpxyjmd5uylwqe8xdlt5d82ktxgu9qsyjahc67r53404t42p44vxv8hwhpdscw9l58jqktkm74");
 const beneficiaryAddrProps = beneficiaryAddr.getProps()
 const beneficiaryKey = beneficiaryAddrProps.delegationPart
+
 const result = await affirm(beneficiaryKey,wallet);
+
 const cardanoTx = wallet.signTx(result,true,true);
 const submitResult = await txBuilder.submitTx(cardanoTx)
+
+
+
+
 
 // You can tell this has taken a lot of debugging:
 /*
