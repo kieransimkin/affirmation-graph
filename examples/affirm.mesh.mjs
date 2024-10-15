@@ -16,7 +16,7 @@ import {resolveSlotNo } from '@meshsdk/common'
 import {skContent} from './common.js'
 const blueprint = JSON.parse(fs.readFileSync('./plutus.json'));
 
-// This just grabs the validator cbor and 
+// This just grabs the validator cbor and generates an address from it 
 const getScript = (type, beneficiaryKeyHash, networkId ) => {
   const scriptCbor=applyCborEncoding(blueprint?.validators[type=='Mint'?0:1]?.compiledCode || '');
   const policyId = resolveScriptHash(scriptCbor, "V3");
@@ -78,14 +78,14 @@ const affirm = async (beneficiary, wallet) => {
       
     const assets = [];
     assets.push({unit: mintingScript.policyId+hexToString(stakeHash), quantity:'1'})
-    const validFromTime = resolveSlotNo('preprod');
+    
     const tx = new Transaction({ initiator: wallet, verbose: true })
       .mintAsset(mintingScript, asset, redeemer)
       .setNetwork("preprod")
       .setRequiredSigners([stakeAddrBech,rewardAddrBase])
       .setCollateral(collateral)
-      .setTimeToStart(validFromTime)
-      .setTimeToExpire(validFromTime+100)
+      .setTimeToStart(resolveSlotNo('preprod',Date.now()))
+      .setTimeToExpire(resolveSlotNo('preprod',Date.now()))
       .setChangeAddress(stakeAddrBech)
 
     const result = await tx.build();
