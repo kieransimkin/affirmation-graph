@@ -10,7 +10,7 @@ pub type AffirmationDatum {
 }
 
 validator v1 {
-  mint(_redeemer: Void, own_policy: PolicyId, tx: Transaction) {
+  mint(_redeemer: Data, own_policy: PolicyId, tx: Transaction) {
     let Transaction { extra_signatories, outputs, mint, .. } = tx
     expect [mint_triplet] = mint |> assets.flatten
     let (mint_policy, mint_name, mint_quantity) = mint_triplet
@@ -37,7 +37,7 @@ validator v1 {
 
   spend(
     datum: Option<AffirmationDatum>,
-    _redeemer: Void,
+    _redeemer: Data,
     own_ref: OutputReference,
     tx: Transaction,
   ) {
