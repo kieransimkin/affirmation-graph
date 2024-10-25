@@ -1,13 +1,13 @@
 {
   "name": "affirmation-graph",
   "version": "1.0.0",
-  "type": "module",
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "generateCredentials": "node examples/generateCredentials.js",
     "affirm": "node --trace-uncaught examples/affirm.js",
-    "affirmMesh": "node --trace-uncaught examples/affirm.mesh.mjs",
+    "affirmMesh": "node --trace-uncaught examples/affirm.mesh.cjs",
+    "revokeMesh": "node --trace-uncaught examples/revoke.mesh.cjs",
     "build": "aiken build && cp plutus.json submodules/mesh/packages/mesh-contract/src/affirmation/",
     "dev": "aiken build --trace-level verbose",
     "install": "npm run build "
@@ -22,9 +22,12 @@
   },
   "homepage": "https://github.com/kieransimkin/affirmation-graph#readme",
   "dependencies": {
+    "@meshsdk/contracts": "file:submodules/mesh/packages/mesh-contract",
     "@meshsdk/core": "file:submodules/mesh/packages/mesh-core",
     "@stricahq/typhonjs": "^2.0.0",
+    "buffer": "^6.0.3",
     "cbor": "^9.0.2",
-    "lucid-cardano": "^0.10.10"
+    "lucid-cardano": "^0.10.10",
+    "websocket": "^1.0.35"
   }
 }

@@ -1,4 +1,5 @@
 use aiken/collection/list.{filter, find, has}
+use aiken/primitive/bytearray.{length}
 use cardano/address.{Address, Script}
 use cardano/assets.{PolicyId, quantity_of}
 use cardano/transaction.{
@@ -7,6 +8,12 @@ use cardano/transaction.{
 
 pub type AffirmationDatum {
   owner: ByteArray,
+}
+
+pub type RichAffirmationDatum {
+  owner: ByteArray,
+  class: Int,
+  payload: ByteArray,
 }
 
 validator v1 {
@@ -21,9 +28,15 @@ validator v1 {
           outputs,
           fn(output) { output.address.payment_credential == Script(own_policy) },
         )
-      expect check_datum: AffirmationDatum = output_datum
-      expect has(extra_signatories, check_datum.owner) == True
-      expect mint_name == check_datum.owner
+      if output_datum is AffirmationDatum {
+        let check_datum = output_datum
+        expect has(extra_signatories, check_datum.owner) == True
+      } else if output_datum is RichAffirmationDatum {
+        let check_datum: RichAffirmationDatum = output_datum
+        expect has(extra_signatories, check_datum.owner) == True
+      } else {
+        fail
+      }
     } else {
       expect has(extra_signatories, mint_name) == True
     }
@@ -36,7 +49,7 @@ validator v1 {
   }
 
   spend(
-    datum: Option<AffirmationDatum>,
+    datum: Option<Data>,
     _redeemer: Data,
     own_ref: OutputReference,
     tx: Transaction,
@@ -46,13 +59,28 @@ validator v1 {
 
     let (mint_policy, mint_name, mint_quantity) = mint_triplet
     expect mint_quantity == -1
-    expect Some(AffirmationDatum { owner }) = datum
-    expect owner == mint_name
+    expect Some(datum) = datum
     expect Some(own_input) =
       find(inputs, fn(input) { input.output_reference == own_ref })
-    expect quantity_of(own_input.output.value, mint_policy, owner) == 1
     expect own_input.output.address.payment_credential == Script(mint_policy)
-    has(extra_signatories, owner) == True
+
+    if datum is AffirmationDatum {
+      let AffirmationDatum { owner } = datum
+      expect owner == mint_name
+
+      expect quantity_of(own_input.output.value, mint_policy, owner) == 1
+      expect has(extra_signatories, owner) == True
+    } else if datum is RichAffirmationDatum {
+      let RichAffirmationDatum { owner, class, payload } = datum
+      expect owner == mint_name
+      expect class > -1
+      expect length(payload) > 0
+      expect quantity_of(own_input.output.value, mint_policy, owner) == 1
+      expect has(extra_signatories, owner) == True
+    } else {
+      fail
+    }
+    True
   }
 
   else(_) {
