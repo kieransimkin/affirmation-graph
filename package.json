@@ -10,7 +10,8 @@
     "revokeMesh": "node --trace-uncaught examples/revoke.mesh.cjs",
     "build": "aiken build && cp plutus.json submodules/mesh/packages/mesh-contract/src/affirmation/",
     "dev": "aiken build --trace-level verbose",
-    "install": "npm run build "
+    "install": "npm run build ",
+    "format": "prettier --write \"examples/**/*.js\""
   },
   "repository": {
     "type": "git",
